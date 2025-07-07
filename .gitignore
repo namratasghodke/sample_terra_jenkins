@@ -1,0 +1,8 @@
+# Ignore Terraform and nested Git repos
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# Ignore broken or nested repo folder
+envs/dev/Terraform/
