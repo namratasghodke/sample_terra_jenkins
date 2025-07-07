@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  tools {
+    terraform 'Terraform'  // Make sure this is defined in Jenkins Global Tools
+  }
+
   environment {
     AWS_REGION = 'us-east-1'
     AWS_ACCESS_KEY_ID     = credentials('aws-access-key-id')
@@ -10,15 +14,13 @@ pipeline {
   stages {
     stage('Checkout Code') {
       steps {
-        git branch: 'main', url: 'https://github.com/your-org/infra-cicd-template.git'
+        git branch: 'main', url: 'https://github.com/namratasghodke/sample_terra_jenkins'
       }
     }
 
     stage('Terraform Init') {
       steps {
-        sh '''
-          terraform init
-        '''
+        sh 'terraform init'
       }
     }
 
@@ -39,6 +41,7 @@ pipeline {
         sh 'terraform apply -auto-approve -input=false'
       }
     }
+    
   }
 
   post {
