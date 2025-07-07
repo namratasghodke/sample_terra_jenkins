@@ -13,7 +13,7 @@ pipeline {
 
   options {
     timestamps()
-    ansiColor('xterm')
+    // ansiColor('xterm') — Uncomment if plugin is installed
   }
 
   stages {
@@ -27,7 +27,7 @@ pipeline {
       steps {
         withCredentials([[
           $class: 'AmazonWebServicesCredentialsBinding',
-          credentialsId: 'aws-access-key-id'  // Replace with your actual Jenkins AWS credential ID
+          credentialsId: 'aws-access-key-id'  // ✅ Replace with correct AWS credential ID
         ]]) {
           dir("${params.ENV_DIR}") {
             sh 'terraform init -upgrade'
@@ -62,9 +62,9 @@ pipeline {
       }
     }
 
-    stage('Manual Approval') {
+    stage('Manual Approval - Apply') {
       steps {
-        input message: "Approve Apply to ${params.ENV_DIR}?"
+        input message: "✅ Approve APPLY to ${params.ENV_DIR}?"
       }
     }
 
@@ -80,14 +80,33 @@ pipeline {
         }
       }
     }
+
+    stage('Manual Approval - Destroy') {
+      steps {
+        input message: "⚠️ Apply completed. Do you want to DESTROY the infrastructure in ${params.ENV_DIR}?"
+      }
+    }
+
+    stage('Terraform Destroy') {
+      steps {
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: 'aws-access-key-id'
+        ]]) {
+          dir("${params.ENV_DIR}") {
+            sh "terraform destroy -var-file=${params.TF_VARS_FILE} -auto-approve"
+          }
+        }
+      }
+    }
   }
 
   post {
     success {
-      echo "✅ Terraform Applied Successfully!"
+      echo "✅ Terraform Apply and Destroy completed successfully!"
     }
     failure {
-      echo "❌ Failed to apply Terraform"
+      echo "❌ Terraform operation failed."
     }
   }
 }
