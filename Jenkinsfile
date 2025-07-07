@@ -11,6 +11,11 @@ pipeline {
     TF_IN_AUTOMATION = 'true'
   }
 
+  options {
+    timestamps()
+    ansiColor('xterm')
+  }
+
   stages {
     stage('Checkout') {
       steps {
@@ -20,24 +25,39 @@ pipeline {
 
     stage('Terraform Init') {
       steps {
-        dir("${params.ENV_DIR}") {
-          sh 'terraform init -upgrade'
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: 'aws-access-key-id'  // Replace with your actual Jenkins AWS credential ID
+        ]]) {
+          dir("${params.ENV_DIR}") {
+            sh 'terraform init -upgrade'
+          }
         }
       }
     }
 
     stage('Terraform Validate') {
       steps {
-        dir("${params.ENV_DIR}") {
-          sh 'terraform validate'
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: 'aws-access-key-id'
+        ]]) {
+          dir("${params.ENV_DIR}") {
+            sh 'terraform validate'
+          }
         }
       }
     }
 
     stage('Terraform Plan') {
       steps {
-        dir("${params.ENV_DIR}") {
-          sh "terraform plan -var-file=${params.TF_VARS_FILE}"
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: 'aws-access-key-id'
+        ]]) {
+          dir("${params.ENV_DIR}") {
+            sh "terraform plan -var-file=${params.TF_VARS_FILE}"
+          }
         }
       }
     }
@@ -50,8 +70,13 @@ pipeline {
 
     stage('Terraform Apply') {
       steps {
-        dir("${params.ENV_DIR}") {
-          sh "terraform apply -var-file=${params.TF_VARS_FILE} -auto-approve"
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: 'aws-access-key-id'
+        ]]) {
+          dir("${params.ENV_DIR}") {
+            sh "terraform apply -var-file=${params.TF_VARS_FILE} -auto-approve"
+          }
         }
       }
     }
