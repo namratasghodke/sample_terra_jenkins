@@ -1,12 +1,26 @@
-variable "function_name" {}
-variable "role_arn" {}
-variable "handler" {}
-variable "runtime" {}
-variable "filename" {}
-variable "environment_variables" {
-  type    = map(string)
-  default = {}
+variable "lambda_function_name" {
+  type = string
 }
-variable "project" {
-  default = "shared-lambda"
+
+variable "lambda_handler" {
+  type    = string
+  default = "index.handler"
+}
+
+variable "lambda_runtime" {
+  type    = string
+  default = "python3.9"
+}
+
+variable "lambda_role_arn" {
+  type = string
+}
+
+variable "target_bucket" {
+  type = string
+}
+
+variable "lambda_source" {
+  description = "Path to the Lambda Python file"
+  type        = string
 }
